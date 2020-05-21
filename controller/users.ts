@@ -71,3 +71,37 @@ const users: User[] = [{
   gender: "Male",
   ipAddress: "223.187.159.162",
 }];
+
+// @desc Get all users
+// @route GET /api/users
+export const getUsers = ({ response }: { response: any }) => {
+  response.body = {
+    success: true,
+    data: users,
+  };
+};
+
+// @desc Get the user
+// @route GET /api/user/:id
+export const getUser = (
+  { params, response }: { params: { id: string }; response: any },
+) => {
+  const foundUser = users.find((user) =>
+    user.id === Number.parseInt(params.id)
+  );
+
+  if (foundUser) {
+    response.status = 200;
+    response.body = {
+      success: true,
+      data: foundUser,
+    };
+  } else {
+    response.status = 404;
+    response.body = {
+      success: true,
+      data: null,
+      message: `User with id=${params.id} not found.`,
+    };
+  }
+};
