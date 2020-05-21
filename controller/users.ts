@@ -1,6 +1,7 @@
 import { User } from "../models/User.ts";
+import { Request, Response } from "https://deno.land/x/oak@v4.0.0/mod.ts";
 
-const users: User[] = [{
+let users: User[] = [{
   id: 1,
   firstName: "Amabelle",
   lastName: "Drewitt",
@@ -74,7 +75,7 @@ const users: User[] = [{
 
 // @desc Get all users
 // @route GET /api/users
-export const getUsers = ({ response }: { response: any }) => {
+export const getUsers = ({ response }: { response: Response }) => {
   response.body = {
     success: true,
     data: users,
@@ -84,7 +85,7 @@ export const getUsers = ({ response }: { response: any }) => {
 // @desc Get the user
 // @route GET /api/user/:id
 export const getUser = (
-  { params, response }: { params: { id: string }; response: any },
+  { params, response }: { params: { id: string }; response: Response },
 ) => {
   const foundUser = users.find((user) =>
     user.id === Number.parseInt(params.id)
@@ -95,6 +96,99 @@ export const getUser = (
     response.body = {
       success: true,
       data: foundUser,
+    };
+  } else {
+    response.status = 404;
+    response.body = {
+      success: true,
+      data: null,
+      message: `User with id=${params.id} not found.`,
+    };
+  }
+};
+
+// @desc Add the user
+// @route POST /api/users
+export const addUser = async (
+  { request, response }: { request: Request; response: Response },
+) => {
+  const { value } = await request.body();
+
+  if (!request.hasBody) {
+    response.status = 400;
+    response.body = {
+      success: false,
+      data: null,
+      message: "Invalid data.",
+    };
+  } else {
+    const user: User = value;
+
+    const newId = (users.slice(-1)[0].id || 0) + 1; //generate next id in sequence
+
+    user.id = newId;
+    users.push(user);
+
+    response.status = 201;
+    response.body = {
+      success: true,
+      data: user,
+    };
+  }
+};
+
+// @desc Update the user
+// @route PUT /api/users/:id
+export const upadateUser = async (
+  { params, request, response }: {
+    params: { id: string };
+    request: Request;
+    response: Response;
+  },
+) => {
+  const foundUser = users.find((user) =>
+    user.id === Number.parseInt(params.id)
+  );
+
+  if (foundUser) {
+    const { value } = await request.body();
+    const updatedUser: Partial<User> = value;
+
+    users = users.map((u) =>
+      u.id === Number.parseInt(params.id) ? { ...u, ...updatedUser } : u
+    );
+
+    response.status = 200;
+    response.body = {
+      success: true,
+      data: users,
+    };
+  } else {
+    response.status = 404;
+    response.body = {
+      success: true,
+      data: null,
+      message: `User with id=${params.id} not found.`,
+    };
+  }
+};
+
+// @desc Delete the user
+// @route DELETE /api/users/:id
+export const deleteUser = (
+  { params, response }: { params: { id: string }; response: Response },
+) => {
+  const filteredUsers = users.filter((user) =>
+    user.id !== Number.parseInt(params.id)
+  );
+
+  if (filteredUsers.length !== users.length) {
+    users = filteredUsers;
+
+    response.status = 200;
+    response.body = {
+      success: true,
+      data: users,
     };
   } else {
     response.status = 404;
