@@ -76,7 +76,7 @@ let users: User[] = [{
 
 // @desc Get all users
 // @route GET /api/users
-export const getUsers = ({ response }: { response: Response }) => {
+const getUsers = ({ response }: { response: Response }) => {
   response.body = {
     success: true,
     data: users,
@@ -85,7 +85,7 @@ export const getUsers = ({ response }: { response: Response }) => {
 
 // @desc Get the user
 // @route GET /api/user/:id
-export const getUser = (
+const getUser = (
   { params, response }: { params: { id: string }; response: Response },
 ) => {
   const foundUser = users.find((user) => user.id === params.id);
@@ -108,7 +108,7 @@ export const getUser = (
 
 // @desc Add the user
 // @route POST /api/users
-export const addUser = async (
+const addUser = async (
   { request, response }: { request: Request; response: Response },
 ) => {
   const { value } = await request.body();
@@ -138,7 +138,7 @@ export const addUser = async (
 
 // @desc Update the user
 // @route PUT /api/users/:id
-export const upadateUser = async (
+const upadateUser = async (
   { params, request, response }: {
     params: { id: string };
     request: Request;
@@ -170,7 +170,7 @@ export const upadateUser = async (
 
 // @desc Delete the user
 // @route DELETE /api/users/:id
-export const deleteUser = (
+const deleteUser = (
   { params, response }: { params: { id: string }; response: Response },
 ) => {
   const filteredUsers = users.filter((user) => user.id !== params.id);
@@ -191,4 +191,12 @@ export const deleteUser = (
       message: `User with id=${params.id} not found.`,
     };
   }
+};
+
+export {
+  getUsers,
+  getUser,
+  addUser,
+  upadateUser,
+  deleteUser,
 };
