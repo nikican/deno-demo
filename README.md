@@ -24,7 +24,6 @@ deno run --allow-net App.ts
 
 ```
  {
-    "id": "1",
     "name": "Velociraptor",
     "era": "Late Cretaceous",
     "diet": "Carnivorous",
