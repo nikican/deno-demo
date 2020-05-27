@@ -1,5 +1,5 @@
 import { Dinosaur } from "../models/Dinosaur.ts";
-import { Request, Response } from "https://deno.land/x/oak@v4.0.0/mod.ts";
+import { RouterContext } from "https://deno.land/x/oak@v4.0.0/mod.ts";
 import { v4 } from "https://deno.land/std/uuid/mod.ts";
 
 let dinosaurs: Dinosaur[] = [
@@ -8,69 +8,37 @@ let dinosaurs: Dinosaur[] = [
     name: "Velociraptor",
     era: "Late Cretaceous",
     diet: "Carnivorous",
-    regions: [
-      "Asia",
-    ],
-    heigth: 2,
-    length: 6,
-    weigth: 33,
   },
   {
     id: "2",
     name: "Triceratops",
     era: "Late Cretaceous",
     diet: "Herbivorous",
-    regions: [
-      "North America",
-    ],
-    heigth: 10,
-    length: 33,
-    weigth: 26800,
   },
   {
     id: "3",
     name: "Tyrannosaurus Rex",
     era: "Late Cretaceous",
     diet: "Carnivorous",
-    regions: [
-      "North America",
-    ],
-    heigth: 13,
-    length: 39,
-    weigth: 13310,
   },
   {
     id: "4",
     name: "Stegosaurus",
     era: "Late Jurassic",
     diet: "Omnivorous",
-    regions: [
-      "North America",
-      "Europe",
-    ],
-    heigth: 14,
-    length: 29,
-    weigth: 6000,
   },
   {
     id: "5",
     name: "Iguanodon",
     era: "Early Cretaceous",
     diet: "Herbivorous",
-    regions: [
-      "North America",
-      "Europe",
-    ],
-    heigth: 16,
-    length: 33,
-    weigth: 11000,
   },
 ];
 
 // @desc Get all dinosaurs
 // @route GET /api/dinosaurs
-const getDinosaurs = ({ response }: { response: Response }) => {
-  response.body = {
+const getDinosaurs = (ctx: RouterContext) => {
+  ctx.response.body = {
     success: true,
     data: dinosaurs,
   };
@@ -78,9 +46,8 @@ const getDinosaurs = ({ response }: { response: Response }) => {
 
 // @desc Get the dinosaur
 // @route GET /api/dinosaur/:id
-const getDinosaur = (
-  { params, response }: { params: { id: string }; response: Response },
-) => {
+const getDinosaur = (ctx: RouterContext) => {
+  const { params, response } = ctx;
   const foundDinosaur = dinosaurs.find((dinosaur) => dinosaur.id === params.id);
 
   if (foundDinosaur) {
@@ -101,9 +68,8 @@ const getDinosaur = (
 
 // @desc Add the dinosaur
 // @route POST /api/dinosaurs
-const addDinosaur = async (
-  { request, response }: { request: Request; response: Response },
-) => {
+const addDinosaur = async (ctx: RouterContext) => {
+  const { request, response } = ctx;
   const { value } = await request.body();
 
   if (!request.hasBody) {
@@ -131,13 +97,8 @@ const addDinosaur = async (
 
 // @desc Update the dinosaur
 // @route PUT /api/dinosaurs/:id
-const upadateDinosaur = async (
-  { params, request, response }: {
-    params: { id: string };
-    request: Request;
-    response: Response;
-  },
-) => {
+const upadateDinosaur = async (ctx: RouterContext) => {
+  const { params, request, response } = ctx;
   const foundDinosaur = dinosaurs.find((dinosaur) => dinosaur.id === params.id);
 
   if (foundDinosaur) {
@@ -166,8 +127,9 @@ const upadateDinosaur = async (
 // @desc Delete the dinosaur
 // @route DELETE /api/dinosaurs/:id
 const deleteDinosaur = (
-  { params, response }: { params: { id: string }; response: Response },
+  ctx: RouterContext,
 ) => {
+  const { params, response } = ctx;
   const filteredDinosaurs = dinosaurs.filter((dinosaur) =>
     dinosaur.id !== params.id
   );
