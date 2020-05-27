@@ -16,3 +16,21 @@ deno run --allow-net App.ts
 
 - [Deno](https://deno.land/) - A **secure** runtime for **JavaScript** and **TypeScript**.
 - [Oak](https://oakserver.github.io/oak/) - A middleware framework for Deno's net server
+
+## Routes
+
+- GET `/dinosaurs` : Fetches list of all dinosaurs
+- POST `/dinosaurs` : Let's you create a dinosaur
+
+```
+ {
+    "id": "1",
+    "name": "Velociraptor",
+    "era": "Late Cretaceous",
+    "diet": "Carnivorous",
+  },
+```
+
+- GET `/dinosaurs/:id` : Fetch a single dinosaur
+- PUT `/dinosaurs/:id` : Update details of a dinosaur
+- DELETE `/dinosaurs/:id` : Delete a dinosaur
