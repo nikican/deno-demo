@@ -9,7 +9,7 @@ Install Deno following the [instructions](https://deno.land/#installation).
 ## Run
 
 ```
-deno run --allow-net server.ts
+deno run --allow-net App.ts
 ```
 
 ## Built With

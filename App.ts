@@ -1,8 +1,8 @@
 import { Application } from "https://deno.land/x/oak@v4.0.0/mod.ts";
-import router from "./routes.ts";
+import router from "./Routes.ts";
 
 const app = new Application();
-const port = 9000;
+const port = 9001;
 
 app.use(router.routes());
 app.use(router.allowedMethods());
