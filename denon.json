@@ -3,7 +3,10 @@
   "scripts": {
     "start": {
       "cmd": "deno run App.ts",
-      "allow": ["env", "net"]
+      "allow": ["env", "net"],
+      "env": {
+        "PORT": "9001"
+      }
     }
   },
   "logger": {
