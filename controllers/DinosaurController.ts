@@ -62,6 +62,7 @@ const getDinosaurs = async (ctx: RouterContext) => {
       return dinosaur;
     });
 
+    ctx.response.status = 200;
     ctx.response.body = {
       success: true,
       data: dinosaurs,
@@ -76,32 +77,58 @@ const getDinosaurs = async (ctx: RouterContext) => {
   } finally {
     await client.end();
   }
-
-  ctx.response.body = {
-    success: true,
-    data: dinosaurs,
-  };
 };
 
 // @desc Get the dinosaur
 // @route GET /api/dinosaur/:id
-const getDinosaur = (ctx: RouterContext) => {
+const getDinosaur = async (ctx: RouterContext) => {
   const { params, response } = ctx;
-  const foundDinosaur = dinosaurs.find((dinosaur) => dinosaur.id === params.id);
+  try {
+    await client.connect();
 
-  if (foundDinosaur) {
-    response.status = 200;
+    const result = await client.query(
+      "SELECT * FROM dinosaur WHERE id=$1",
+      params.id,
+    );
+
+    if (!result.rows.toString()) {
+      response.status = 404;
+      response.body = {
+        success: false,
+        data: null,
+        message: `Dinosaur with id=${params.id} not found.`,
+      };
+
+      return;
+    } else {
+      const columns = result.rowDescription.columns.map((column) =>
+        column.name
+      );
+
+      const dinosaurs = result.rows.map((dino) => {
+        const dinosaur: any = {};
+        columns.forEach((element, i) => {
+          dinosaur[element] = dino[i];
+        });
+
+        return dinosaur;
+      });
+
+      response.status = 200;
+      response.body = {
+        success: true,
+        data: dinosaurs[0],
+      };
+    }
+  } catch (error) {
+    response.status = 500;
     response.body = {
-      success: true,
-      data: foundDinosaur,
-    };
-  } else {
-    response.status = 404;
-    response.body = {
-      success: true,
+      success: false,
       data: null,
-      message: `Dinosaur with id=${params.id} not found.`,
+      message: error.toString(),
     };
+  } finally {
+    await client.end();
   }
 };
 
