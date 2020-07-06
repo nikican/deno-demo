@@ -10,9 +10,9 @@ import {
 const router = new Router();
 
 router.get("/api/dinosaurs", getDinosaurs)
-  .get("/api/dinosaur/:id", getDinosaur)
-  .post("/api/dinosaur", addDinosaur)
-  .put("/api/dinosaur/:id", upadateDinosaur)
-  .delete("/api/dinosaur/:id", deleteDinosaur);
+  .get("/api/dinosaurs/:id", getDinosaur)
+  .post("/api/dinosaurs", addDinosaur)
+  .put("/api/dinosaurs/:id", upadateDinosaur)
+  .delete("/api/dinosaurs/:id", deleteDinosaur);
 
 export default router;

@@ -1,6 +1,11 @@
 import { Dinosaur } from "../models/Dinosaur.ts";
 import { RouterContext } from "https://deno.land/x/oak@v4.0.0/mod.ts";
 import { v4 } from "https://deno.land/std/uuid/mod.ts";
+import { Client } from "https://deno.land/x/postgres/mod.ts";
+import { dbConfig } from "../config.ts";
+
+// initialize db connection
+const client = new Client(dbConfig);
 
 let dinosaurs: Dinosaur[] = [
   {
@@ -35,9 +40,43 @@ let dinosaurs: Dinosaur[] = [
   },
 ];
 
+async function main() {
+}
+
 // @desc Get all dinosaurs
 // @route GET /api/dinosaurs
-const getDinosaurs = (ctx: RouterContext) => {
+const getDinosaurs = async (ctx: RouterContext) => {
+  try {
+    await client.connect();
+
+    const result = await client.query("SELECT * FROM dinosaur");
+
+    const columns = result.rowDescription.columns.map((column) => column.name);
+
+    const dinosaurs = result.rows.map((dino) => {
+      const dinosaur: any = {};
+      columns.forEach((element, i) => {
+        dinosaur[element] = dino[i];
+      });
+
+      return dinosaur;
+    });
+
+    ctx.response.body = {
+      success: true,
+      data: dinosaurs,
+    };
+  } catch (error) {
+    ctx.response.status = 500;
+    ctx.response.body = {
+      success: false,
+      data: null,
+      message: error.toString(),
+    };
+  } finally {
+    await client.end();
+  }
+
   ctx.response.body = {
     success: true,
     data: dinosaurs,
@@ -70,7 +109,7 @@ const getDinosaur = (ctx: RouterContext) => {
 // @route POST /api/dinosaurs
 const addDinosaur = async (ctx: RouterContext) => {
   const { request, response } = ctx;
-  const { value } = await request.body();
+  const { value:dinosaur } = await request.body();
 
   if (!request.hasBody) {
     response.status = 400;
@@ -80,18 +119,29 @@ const addDinosaur = async (ctx: RouterContext) => {
       message: "Invalid data.",
     };
   } else {
-    const dinosaur: Dinosaur = value;
+    try {
+      await client.connect();
+      const result = await client.query(
+        "INSERT INTO dinosaur (name, era, diet) VALUES($1,$2,$3)",
+        dinosaur.name,
+        dinosaur.era,
+        dinosaur.diet,
+      );
 
-    const newId = v4.generate();
-
-    dinosaur.id = newId;
-    dinosaurs.push(dinosaur);
-
-    response.status = 201;
-    response.body = {
-      success: true,
-      data: dinosaur,
-    };
+      response.status = 201;
+      response.body = {
+        success: true,
+        data: dinosaur,
+      };
+    } catch (error) {
+      response.status = 500;
+      response.body = {
+        success: false,
+        message: error.toString(),
+      };
+    } finally {
+      await client.end();
+    }
   }
 };
 
