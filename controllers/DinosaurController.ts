@@ -176,28 +176,53 @@ const addDinosaur = async (ctx: RouterContext) => {
 // @route PUT /api/dinosaurs/:id
 const upadateDinosaur = async (ctx: RouterContext) => {
   const { params, request, response } = ctx;
-  const foundDinosaur = dinosaurs.find((dinosaur) => dinosaur.id === params.id);
+  await getDinosaur(ctx);
 
-  if (foundDinosaur) {
-    const { value } = await request.body();
-    const updatedDinosaur: Partial<Dinosaur> = value;
-
-    dinosaurs = dinosaurs.map((u) =>
-      u.id === params.id ? { ...u, ...updatedDinosaur } : u
-    );
-
-    response.status = 200;
-    response.body = {
-      success: true,
-      data: dinosaurs,
-    };
-  } else {
+  if (response.status === 404) {
     response.status = 404;
     response.body = {
-      success: true,
+      success: false,
       data: null,
       message: `Dinosaur with id=${params.id} not found.`,
     };
+
+    return;
+  } else {
+    const { value:dinosaur } = await request.body();
+
+    if (!request.hasBody) {
+      response.status = 400;
+      response.body = {
+        success: false,
+        data: null,
+        message: "Invalid data.",
+      };
+    } else {
+      try {
+        await client.connect();
+        const result = await client.query(
+          "UPDATE dinosaur SET name=$1, era=$2, diet=$3 WHERE id =$4",
+          dinosaur.name,
+          dinosaur.era,
+          dinosaur.diet,
+          dinosaur.id,
+        );
+
+        response.status = 200;
+        response.body = {
+          success: true,
+          data: dinosaur,
+        };
+      } catch (error) {
+        response.status = 500;
+        response.body = {
+          success: false,
+          message: error.toString(),
+        };
+      } finally {
+        await client.end();
+      }
+    }
   }
 };
 
