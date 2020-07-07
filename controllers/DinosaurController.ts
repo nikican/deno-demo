@@ -1,47 +1,10 @@
 import { Dinosaur } from "../models/Dinosaur.ts";
 import { RouterContext } from "https://deno.land/x/oak@v4.0.0/mod.ts";
-import { v4 } from "https://deno.land/std/uuid/mod.ts";
 import { Client } from "https://deno.land/x/postgres/mod.ts";
 import { dbConfig } from "../config.ts";
 
 // initialize db connection
 const client = new Client(dbConfig);
-
-let dinosaurs: Dinosaur[] = [
-  {
-    id: "1",
-    name: "Velociraptor",
-    era: "Late Cretaceous",
-    diet: "Carnivorous",
-  },
-  {
-    id: "2",
-    name: "Triceratops",
-    era: "Late Cretaceous",
-    diet: "Herbivorous",
-  },
-  {
-    id: "3",
-    name: "Tyrannosaurus Rex",
-    era: "Late Cretaceous",
-    diet: "Carnivorous",
-  },
-  {
-    id: "4",
-    name: "Stegosaurus",
-    era: "Late Jurassic",
-    diet: "Omnivorous",
-  },
-  {
-    id: "5",
-    name: "Iguanodon",
-    era: "Early Cretaceous",
-    diet: "Herbivorous",
-  },
-];
-
-async function main() {
-}
 
 // @desc Get all dinosaurs
 // @route GET /api/dinosaurs
@@ -228,29 +191,43 @@ const upadateDinosaur = async (ctx: RouterContext) => {
 
 // @desc Delete the dinosaur
 // @route DELETE /api/dinosaurs/:id
-const deleteDinosaur = (
+const deleteDinosaur = async (
   ctx: RouterContext,
 ) => {
   const { params, response } = ctx;
-  const filteredDinosaurs = dinosaurs.filter((dinosaur) =>
-    dinosaur.id !== params.id
-  );
+  await getDinosaur(ctx);
 
-  if (filteredDinosaurs.length !== dinosaurs.length) {
-    dinosaurs = filteredDinosaurs;
-
-    response.status = 200;
-    response.body = {
-      success: true,
-      data: dinosaurs,
-    };
-  } else {
+  if (response.status === 404) {
     response.status = 404;
     response.body = {
-      success: true,
+      success: false,
       data: null,
       message: `Dinosaur with id=${params.id} not found.`,
     };
+
+    return;
+  } else {
+    try {
+      await client.connect();
+      const result = await client.query(
+        "DELETE FROM  dinosaur WHERE id =$1",
+        params.id,
+      );
+
+      response.status = 204;
+      response.body = {
+        success: true,
+        message: `Dinosaur with id=${params.id} deleted.`,
+      };
+    } catch (error) {
+      response.status = 500;
+      response.body = {
+        success: false,
+        message: error.toString(),
+      };
+    } finally {
+      await client.end();
+    }
   }
 };
 
